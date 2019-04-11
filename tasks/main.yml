@@ -1,0 +1,59 @@
+---
+- name: Create kibana Path
+  file:
+    path: "{{ kibana_install_dir }}"
+    owner: "{{ kibana_user }}"
+    group: "{{ kibana_group }}"
+    state: directory
+    mode: "u=rwx,g=rx,o=x"
+
+- name: Create kibana Version Path
+  file:
+    path: "{{ kibana_install_dir }}/{{kibana_version}}"
+    owner: "{{ kibana_user }}"
+    group: "{{ kibana_group }}"
+    state: directory
+    mode: "u=rwx,g=rx,o=x"
+
+- name: Create kibana log Path
+  file:
+    path: "{{ kibana_log_dir }}"
+    owner: "{{ kibana_user }}"
+    group: "{{ kibana_group }}"
+    state: directory
+    mode: "u=rwx,g=rx,o=x"
+
+- name: "copy {{ kibana_install_tar }} to {{ kibana_install_dir }}"
+  copy:
+    src: "files/{{ kibana_install_tar }}"
+    dest: "{{ kibana_install_dir }}"
+
+- name: "Extract {{ kibana_install_tar }} into {{ kibana_install_dir }}"
+  unarchive:
+    remote_src: yes
+    src: "{{ kibana_install_dir }}/{{ kibana_install_tar }}"
+    dest: "{{ kibana_install_dir }}/{{ kibana_version }}"
+    owner: "{{ kibana_user }}"
+    group: "{{ kibana_group }}"
+    extra_opts: [--strip-components=1]
+
+- name: Copy kibana service file
+  template:
+    src: kibana.ini.j2
+    dest: "{{ supervisord_ini_dir }}/kibana.ini"
+    owner: "{{ kibana_user }}"
+    group: "{{ kibana_group }}"
+    mode: "u=rw,g=r,o=r"
+  notify:
+    - update supervisord
+    - restart kibana
+
+- name: Copy kibana config file
+  template:
+    src: kibana.yml.j2
+    dest: "{{ kibana_install_dir }}/{{ kibana_version }}/config/kibana.yml"
+    owner: "{{ kibana_user }}"
+    group: "{{ kibana_group }}"
+    mode: "u=rw,g=r,o=r"
+  notify:
+    - restart kibana

@@ -1,0 +1,8 @@
+[program:kibana]
+user={{ kibana_user }}
+command={{ kibana_install_dir }}/{{ kibana_version }}/bin/kibana
+autostart=true
+autorestart=true
+environment=KIBANA_PATH_CONF={{ kibana_install_dir }}/{{ kibana_version }}/config
+stdout_logfile={{ kibana_log_dir }}/kibana.out.log
+stderr_logfile={{ kibana_log_dir }}/kibana.err.log
